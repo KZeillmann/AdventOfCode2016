@@ -54,11 +54,14 @@ defmodule AdventOne do
   def obey({x,y,compass_direction, history}, {direction, steps}) do
     new_direction = new_compass_direction(compass_direction, direction)
     {new_x, new_y} = travel({x,y}, new_direction, steps)
-    result = {new_x, new_y}
-    if(Enum.member?(history, result)) do
-      IO.inspect "We've been here before! #{new_x}, #{new_y}"
-    end
-    history = history ++ [result]
+    points = points_between(x,y, new_x, new_y)
+    points = Enum.drop(points, -1)
+    Enum.each(points, fn(point) ->
+      if(Enum.member?(history, point)) do
+        IO.inspect "We've been here before! #{elem(point, 0)}, #{elem(point, 1)}"
+      end
+    end)
+    history = history ++ points
     {new_x, new_y, new_direction, history}
   end
 
@@ -67,8 +70,18 @@ defmodule AdventOne do
     |> Enum.reduce({0,0,:north, []}, fn(x, acc) -> obey(acc, x) end)
   end
 
+  def points_between(p1x, p1y, p2x, p2y) do
+    if p1x == p2x do
+      Enum.reduce(p1y..p2y, [], &( &2 ++ [{p1x, &1}]))
+    else
+      Enum.reduce(p1x..p2x, [], &(&2 ++ [{&1, p1y}]))
+    end
+  end
+
 end
 
 # IO.inspect AdventOne.read_file("1.txt")
 
+
+#IO.inspect AdventOne.points_between(0, -2, -5, -2)
 IO.inspect AdventOne.final_destination("1.txt")
