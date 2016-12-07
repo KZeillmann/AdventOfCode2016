@@ -18,19 +18,29 @@ defmodule AdventFour do
 
   # Inspired by https://www.rosettacode.org/wiki/Letter_frequency#Elixir
   def calculate_checksum(encrypted_name) do
-    IO.inspect encrypted_name
     encrypted_name
     |> String.graphemes
     |> Enum.reduce(Map.new, fn c,acc -> Map.update(acc, c, 1, &(&1+1)) end)
-
+    |> Enum.sort(fn(x1, x2) ->
+      cond do
+        (elem(x1, 1) > elem(x2, 1)) -> true
+        (elem(x1, 1) == elem(x2, 1)) -> (elem(x1, 0) < elem(x2, 0))
+        true -> false
+      end
+    end)
+    |> Enum.map(&(elem(&1, 0)))
+    |> Enum.slice(0..4)
+    |> Enum.join("")
   end
 
   def solve_puzzle do
     read_file("4.txt")
-    |> Enum.map(&(calculate_checksum(elem(&1, 0))))
+    |> Enum.map(&({calculate_checksum(elem(&1, 0)), elem(&1, 1), elem(&1, 2)}))
+    |> Enum.filter_map(&(elem(&1, 0)== elem(&1, 2)), &(elem(&1, 1)))
+    |> Enum.reduce(&(&1+&2))
   end
 end
 
-IO.inspect AdventFour.calculate_checksum("notarealroom")
+# IO.inspect AdventFour.calculate_checksum("notarealroom")
 
-# IO.inspect AdventFour.solve_puzzle
+IO.inspect AdventFour.solve_puzzle
